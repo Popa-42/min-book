@@ -3,6 +3,8 @@
   pattern,
   part: none,
   chapter: none,
+  chapter-counter: none,
+  chapter-continuous: false,
   default: "I.I.1.1.1.a",
 ) = (..level) => context {
   import "@preview/numbly:0.1.0": numbly
@@ -11,6 +13,17 @@
   if pattern == none {return none}
   
   let level = level.pos()
+  if chapter-continuous and chapter-counter != none and part != none and level.len() >= 2 {
+    let chapter = chapter-counter.get().at(0)
+
+    if level.len() == 2 {
+      chapter-counter.step()
+      level.at(1) = chapter + 1
+    }
+    else {
+      level.at(1) = chapter
+    }
+  }
   let after-toc = query(selector(<toc:inserted>).before(here())) != ()
   let spacing = not after-toc and pattern.at(level.len() - 1, default: none) != ""
   let pattern = pattern

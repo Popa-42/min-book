@@ -258,7 +258,13 @@
     ),
   )
   set heading(
-    numbering: utils.numbering(pattern, part: meta.part, chapter: meta.chapter),
+    numbering: utils.numbering(
+      pattern,
+      part: meta.part,
+      chapter: meta.chapter,
+      chapter-counter: h2-count,
+      chapter-continuous: cfg.chapter-continuous,
+    ),
     hanging-indent: 0pt,
     supplement: it => context {
       if meta.part != none and it.depth == 1 {meta.part}
@@ -329,13 +335,18 @@
     if el != none and el.func() == heading and it.form == "normal" {
       let pattern = pattern
       let number
+      let level = counter(heading).at(el.location())
       
       // Remove \n and trim full stops
       if pattern != none and part != "" {
         import "@preview/numbly:0.1.0": numbly
 
         pattern = pattern.map( i => i.replace("\n", "").trim(regex("[.:]")) )
-        number = numbly(..pattern)(..counter(heading).at(el.location()))
+        if cfg.chapter-continuous and meta.part != none and el.level >= 2 {
+          level.at(1) = h2-count.at(el.location()).at(0) + 1
+        }
+
+        number = numbly(..pattern)(..level)
         
         // New reference without \n
         link(el.location())[#el.supplement #number]
@@ -355,7 +366,7 @@
     let condition = it.element.numbering == none and outline.indent == auto
     let prefix = if condition {h(0.5em)} else {it.prefix()}
     let entry = it.indented(prefix, it.inner(), gap: 0em)
-    
+
     if not cfg.std-toc and it.level == 1 and meta.part != none {
       v(font-size, weak: true)
       strong(entry)

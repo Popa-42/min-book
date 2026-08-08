@@ -198,6 +198,7 @@
     ),
     size: font-size
   )
+  let h2-count = counter("min-book-h2-count")
   set terms(
     ..default(
       when: terms.separator == h(0.6em, weak: true),
@@ -221,6 +222,13 @@
     numbering: (..level) => context {
       let before-toc = query(selector(<toc:inserted>).before(here())) == ()
       let pattern = pattern
+      let level = level.pos()
+
+      if cfg.chapter-continuous and meta.part != none and level.len() >= 2 {
+        if level.len() == 2 {h2-count.step()}
+
+        level.at(1) = h2-count.get().at(0)
+      }
       
       if before-toc {
         if type(pattern) != array {pattern = (pattern,)}
@@ -253,6 +261,10 @@
     
     if (1, 2).contains(it.level) and it.outlined {
       let level = counter(heading).get()
+
+      if cfg.chapter-continuous and meta.part != none and it.level >= 2 {
+        level.at(1) = h2-count.get().at(0) + 1
+      }
       let font = default(
         when: text.font == "jellee roman",
         value: (font: "nunito"),
@@ -350,7 +362,13 @@
         import "@preview/numbly:0.1.0": numbly
 
         pattern = pattern.map( i => i.replace("\n", "").trim(regex("[.:]")) )
-        number = numbly(..pattern)(..counter(heading).at(el.location()))
+        let level = counter(heading).at(el.location())
+
+        if cfg.chapter-continuous and meta.part != none and el.level >= 2 {
+          level.at(1) = h2-count.at(el.location()).at(0) + 1
+        }
+
+        number = numbly(..pattern)(..level)
         
         // New reference without \n
         link(el.location())[#el.supplement #number]

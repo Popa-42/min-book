@@ -140,6 +140,7 @@
   )
   let auto-numbering = cfg.numbering == auto
   let outline-depth
+  let h2-count = counter("min-book-h2-count")
   
   pattern = get.auto-val(
     cfg.numbering,
@@ -218,6 +219,8 @@
       pattern,
       part: meta.part,
       chapter: meta.chapter,
+      chapter-counter: h2-count,
+      chapter-continuous: cfg.chapter-continuous,
       default: "1.",
     ),
     hanging-indent: 0pt,
@@ -259,6 +262,10 @@
     
     if (1, 2).contains(it.level) and it.outlined and back-matter {
       let level = counter(heading).get()
+
+      if cfg.chapter-continuous and meta.part != none and it.level >= 2 {
+        level.at(1) = h2-count.get().at(0) + 1
+      }
       let font = default(
         when: text.font == "tex gyre adventor",
         value: (font: "nunito"),
@@ -342,7 +349,13 @@
         import "@preview/numbly:0.1.0": numbly
 
         pattern = pattern.map( i => i.replace("\n", "").trim(regex("[.:]")) )
-        number = numbly(..pattern)(..counter(heading).at(el.location()))
+        let level = counter(heading).at(el.location())
+
+        if cfg.chapter-continuous and meta.part != none and el.level >= 2 {
+          level.at(1) = h2-count.at(el.location()).at(0) + 1
+        }
+
+        number = numbly(..pattern)(..level)
         
         // New reference without \n
         link(el.location())[#el.supplement #number]
