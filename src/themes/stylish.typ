@@ -60,7 +60,7 @@
       block(width: 52%, inset: 0pt, text(
         meta.volume + "\n" +
         meta.authors + "\n" +
-        meta.date.display("[year]"),
+        meta.date.display("[year]") + " a.\u{202f}D.",
         size: page.width * 0.035,
       ))
     })
@@ -109,7 +109,7 @@
       meta.volume + "\n" +
       meta.edition + "\n" +
       meta.authors + "\n" +
-      meta.date.display("[year]"),
+      meta.date.display("[year]") + " a.\u{202f}D.",
       size: page.width * 0.035,
     ))
   })
