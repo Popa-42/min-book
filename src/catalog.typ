@@ -70,16 +70,18 @@
     }
     parbreak()
     
-    grid(
-      ..classes,
-      columns: (1fr,) * classes.len(),
-      align: center
-    )
+    if classes.len() > 0 {
+      grid(
+        ..classes,
+        columns: (1fr,) * classes.len(),
+        align: center
+      )
+    }
   }
   
   catalog.before
   
-  rect(data)
+  rect(data, stroke: 0.4pt)
   
   catalog.after
 }
